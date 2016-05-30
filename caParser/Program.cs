@@ -75,8 +75,38 @@ namespace caParser
                     lst.Add(new Cre());
 
                     var tbl = sheet.Cell(startRow, 1).InsertTable<Cre>(lst);
-                    
                     tbl.ShowAutoFilter = false;
+
+                    //email
+                    foreach(var cell in tbl.Column(4).Cells())
+                    {
+                        var value = cell.Value.ToString();
+                        if(!String.IsNullOrWhiteSpace(value))
+                        {
+                            Uri result;
+                            if (Uri.TryCreate(value, UriKind.Absolute, out result))
+                            {
+                                cell.Value = value.Replace("mailto:", "").Trim();
+                                cell.Hyperlink.ExternalAddress = result;
+                            }
+
+                        }
+                    }
+                    //website
+                    foreach (var cell in tbl.Column(6).Cells())
+                    {
+                        var value = cell.Value.ToString();
+                        if (!String.IsNullOrWhiteSpace(value))
+                        {
+                            Uri result;
+                            if (Uri.TryCreate(value, UriKind.Absolute, out result))
+                            {
+                                //cell.Value = value.Replace("mailto:", "").Trim();
+                                cell.Hyperlink.ExternalAddress = result;
+                            }
+
+                        }
+                    }
 
                     tbl.Cell(1, 1).Value = usstate.name.ToUpper();
                     
@@ -105,7 +135,7 @@ namespace caParser
                     Console.WriteLine("Got no items");
                 }
             }
-            
+            sheet.Columns().AdjustToContents();
             book.SaveAs(fileOut);
             Console.WriteLine("Finished processing. Press any key to exit...");
             Console.ReadKey();
@@ -180,7 +210,7 @@ namespace caParser
                             {
                                 if (result.AbsoluteUri.ToLower().StartsWith("mailto"))
                                 {
-                                    currentCre.EmailAddress = result.AbsoluteUri.Replace("mailto:", "");
+                                    currentCre.EmailAddress = result.AbsoluteUri;//.Replace("mailto:", "");
                                     currentCre.ContactPerson = node.InnerHtml;
                                     
                                 }
